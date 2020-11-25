@@ -1,0 +1,18 @@
+# Document TOML
+
+tittle = "Конфигурация подключений проекта MatchaServer"
+users_amount = 500
+start_vk_id = 555000
+users_password = "user"
+
+[owner]
+name = "Глобчанский Денис Сергеевич"
+repo = "https://github.com/GlobchanskyDenis/VK_Parser"
+
+[database]
+host = "localhost"
+user = "bsabre"
+pass = "23"
+database_name = "matcha_db"
+database_type = "postgres"
+connection_max = 5000
