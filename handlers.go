@@ -167,8 +167,8 @@ func writeToFile(src []byte) {
 }
 
 func printParseSuccess(userNumber int, vkUID int, user User) {
-	var OK = "\033[32m+\033[m"
-	var KO = "\033[31m+\033[m"
+	var OK = GREEN + "+" + NO_COLOR
+	var KO = RED + "-" + NO_COLOR
 	var dst = strconv.Itoa(userNumber) + "\t" + strconv.Itoa(vkUID) + "\t"
 
 	dst += user.Fname + " " + user.Lname + "\t"

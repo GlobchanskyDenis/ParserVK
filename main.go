@@ -1,13 +1,19 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
 	"database/sql"
 	"fmt"
 	"regexp"
 )
 
 const (
-	// 6253950 брат
+	GREEN = "\033[32m"
+	RED = "\033[31m"
+	YELLOW = "\033[33m"
+	NO_COLOR = "\033[m"
 	passSalt  = "+++"
 	urlString = "https://vk.com/id"
 	filename  = "result.html"
@@ -33,8 +39,6 @@ var (
 func parser(vkUID, UsersAmount int, EncryptedPass string) {
 	var unknownInterests []string
 
-	println("userNbr vkUID             fname, lname, photo, birth, location")
-
 	for userNumber := 1; userNumber <= UsersAmount; vkUID++ {
 		result, err := runGetWithHeaders(vkUID)
 		if err != nil {
@@ -49,7 +53,7 @@ func parser(vkUID, UsersAmount int, EncryptedPass string) {
 		err = user.SaveInDatabase()
 		if err != nil {
 			printParseFail(vkUID, err)
-			fmt.Println("THIS IS SERIOUS ERROR. YOU MUST DROP YOUR DATABASE TABLES FIRST")
+			fmt.Println(RED + "THIS IS SERIOUS ERROR. YOU MUST DROP YOUR DATABASE TABLES FIRST" + NO_COLOR)
 			return
 		}
 		unknownInterests = addToArrayIfNeeded(unknownInterests, user.Interests)
@@ -66,14 +70,29 @@ func parser(vkUID, UsersAmount int, EncryptedPass string) {
 func main() {
 	config, err := GetConfig()
 	if err != nil {
-		fmt.Println("Cannot read config file: ", err)
+		fmt.Println(RED+"Cannot read config file: ", err, NO_COLOR)
 		return
 	}
+	fmt.Println(GREEN + "Config successfully readed" + NO_COLOR)
 	err = ConnectDatabase(config.Sql)
 	if err != nil {
-		fmt.Println("Database connection error: ", err)
+		fmt.Println(RED+"Database connection error: ", err, NO_COLOR)
 		return
 	}
-	fmt.Printf("config successfully readed\n%#v\n", config)
-	parser(config.StartVkId, config.UsersAmount, PassHash(config.UsersPass))
+	fmt.Println(GREEN + "Database succussfully connected" + NO_COLOR)
+
+	quit := make(chan os.Signal, 1)
+
+	go func(config *Config, quit chan os.Signal) {
+		println(YELLOW + "userNbr vkUID             fname, lname, photo, birth, location" + NO_COLOR)
+		parser(config.StartVkId, config.UsersAmount, PassHash(config.UsersPass))
+		quit <- syscall.SIGINT
+	}(config, quit)
+
+	
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
+
+	gDbConn.Close()
+	fmt.Println(GREEN + "Database connection successfully closed" + NO_COLOR)
 }
