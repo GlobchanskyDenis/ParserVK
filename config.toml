@@ -3,7 +3,7 @@
 tittle = "Конфигурация подключений проекта MatchaServer"
 users_amount = 500
 start_vk_id = 555000
-users_password = "user"
+users_password = "User42@!"
 
 [owner]
 name = "Глобчанский Денис Сергеевич"
